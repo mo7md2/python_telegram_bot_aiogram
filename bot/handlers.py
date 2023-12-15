@@ -1,6 +1,8 @@
 from aiogram import types
 from bot.loader import bot, dp
 from bot.texts import button_texts, message_texts
+from bot.utils import download_youtube
+import os
 
 
 @dp.message_handler(commands="start")
@@ -57,7 +59,29 @@ async def alter_lang(callback_query: types.CallbackQuery) -> None:
 
 @dp.message_handler(content_types="text")
 async def text_handler(message: types.Message) -> None:
-    await bot.send_message(message.chat.id, message_texts["text"])
+    start_message_text = message_texts["download_started"]
+    end_message_text = message_texts["download_ended"]
+    url = message.text
+    # test url
+    if "youtube" in url:
+        start_message = await bot.send_message(message.chat.id, start_message_text)
+        result = download_youtube(url)
+        for res in result:
+            if res["status"] == "start":
+                text = f"{start_message_text}\n" + f"({res['data']}mb)"
+                await start_message.edit_text(text)
+            elif res["status"] == "end":
+                # await start_message.edit_text(end_message_text)
+                path = res["data"]
+                video = open(path, "rb")
+                await bot.send_video(message.chat.id, video)
+                await start_message.edit_text(end_message_text)
+                await start_message.delete()
+                os.remove(path)
+    else:
+        await bot.send_message(message.chat.id, "رابط غير معروف")
+
+    # await bot.send_video(message.chat.id, message_texts["text"])
 
 
 @dp.message_handler()

@@ -1,4 +1,6 @@
 {
+  "download_started": "⌛ جاري التحميل",
+  "download_ended": "تم التحميل",
   "welcome": "👋 Hello, I remember you.",
   "about": "ℹ️ <b>[About]\n</b> Bot is a template for future projects.",
   "github": "👨‍💻 the project code is available on Github.",
