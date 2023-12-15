@@ -3,6 +3,7 @@ from aiogram.utils import executor
 from bot.commands import set_default_commands
 from bot.loader import dp
 from loguru import logger
+from bot.keep_alive import keep_alive
 
 
 async def startup(dp: Dispatcher) -> None:
@@ -24,4 +25,5 @@ if __name__ == "__main__":
         rotation="30 KB",
         compression="zip",
     )
+    keep_alive()
     executor.start_polling(dp, skip_updates=True, on_startup=startup, on_shutdown=shutdown)

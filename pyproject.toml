@@ -6,11 +6,12 @@ authors = ["donBarbos <donbarbos@proton.me>"]
 license = "GPL-3.0-or-later"
 
 [tool.poetry.dependencies]
-python = "^3.7"
+python = "^3.8"
 aiogram = "^2.22"
 loguru = "^0.6.0"
 python-dotenv = "^0.21.0"
 pytube = "^15.0.0"
+flask = "^3.0.0"
 
 [tool.poetry.dev-dependencies]
 pre-commit = "^2.20.0"
