@@ -12,7 +12,7 @@ async def start_message(message: types.Message) -> None:
     username = message.from_user.username
     last_name = message.from_user.last_name
     name = first_name or username or last_name or ""
-    await bot.send_message(message.chat.id, f"مرحبا ، {first_name} , {last_name} , {username}")
+    await bot.send_message(message.chat.id, f"مرحبا {first_name} , \n{message_texts['start']}")
 
 
 @dp.message_handler(commands=("help", "info", "about"))
@@ -33,16 +33,6 @@ async def give_contacts(message: types.Message) -> None:
         message_texts["github"],
         reply_markup=keyboard_link,
     )
-
-
-@dp.message_handler(commands="settings")
-async def give_settings(message: types.Message) -> None:
-    """справка по настройкам."""
-
-    btn_name = types.InlineKeyboardButton(text=f"name: {'name'}", callback_data="name")
-    btn_lang = types.InlineKeyboardButton(text=f"language: {'lang'}", callback_data="lang")
-    keyboard_settings = types.InlineKeyboardMarkup().add(btn_name, btn_lang)
-    await bot.send_message(message.chat.id, message_texts["settings"], reply_markup=keyboard_settings)
 
 
 @dp.callback_query_handler(lambda c: c.data == "name")
