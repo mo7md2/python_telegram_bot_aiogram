@@ -1,5 +1,5 @@
 FROM python:3.10.5-slim
-
+# it is just informative
 EXPOSE 8081/tcp
 
 RUN pip install --no-cache-dir poetry

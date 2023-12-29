@@ -1,8 +1,11 @@
 version: "3"
-
+services:
   bot:
     container_name: telegram-bot
     build: .
     restart: always
     env_file:
       - .env
+    ports:
+      # keep_alive
+      - "8080:8080"
