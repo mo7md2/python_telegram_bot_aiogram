@@ -53,7 +53,7 @@ async def text_handler(message: types.Message) -> None:
     end_message_text = message_texts["download_ended"]
     url = message.text
     # test url
-    if "youtube" in url:
+    if "youtu" in url:
         start_message = await bot.send_message(message.chat.id, start_message_text)
         result = download_youtube(url)
         for res in result:
