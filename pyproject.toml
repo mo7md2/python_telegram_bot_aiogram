@@ -7,7 +7,7 @@ license = "GPL-3.0-or-later"
 
 [tool.poetry.dependencies]
 python = "^3.8"
-aiogram = "^2.22"
+aiogram = "^3.3"
 loguru = "^0.6.0"
 python-dotenv = "^0.21.0"
 pytube = "^15.0.0"
