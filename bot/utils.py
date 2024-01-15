@@ -23,7 +23,7 @@ def get_youtube_stream_text(stream):
     m_type = stream.mime_type
     text = ""
     if "audio" in m_type:
-        text = f"صوت\n - {size}mb"
+        text = f"🎤 صوت"
     else:
-        text = f"فيديو\n - {res} - {size}mb"
+        text = f"🎥 فيديو {res}"
     return text
