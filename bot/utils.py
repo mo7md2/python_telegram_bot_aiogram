@@ -1,15 +1,29 @@
+from typing import BinaryIO, List
 from pytube import YouTube
-from typing import BinaryIO
+from pytube import Stream
+from bot.models import Job
 
 
-def download_youtube(url: str):
-    stream = YouTube(url).streams.filter(progressive=True, file_extension="mp4").order_by("resolution").desc().first()
-    size = {"status": "start", "data": stream.filesize_mb}
+def get_youtube_download_options(url: str) -> Job:
+    yt = YouTube(url)
 
-    yield size
-    path = stream.download()
-    yield {"status": "end", "data": path}
+    thumbnail_url = yt.thumbnail_url
+    video_id = yt.video_id
+    audio_stream = yt.streams.filter(mime_type="audio/mp4").first()
+    title = yt.title
+    video_streams = yt.streams.filter(progressive=True, file_extension="mp4").order_by("resolution").desc()[:3]
+    streams: List[Stream] = [audio_stream] + video_streams
+    data = Job(url_msg_id=None, thumbnail_url=thumbnail_url, streams=streams, title=title, video_id=video_id)
+    return data
 
 
-def on_yt_progress(chunk: bytes, file_handler: BinaryIO, bytes_remaining: int, size: int) -> None:
-    print(f"downloaded ({size/bytes_remaining})")
+def get_youtube_stream_text(stream):
+    res = stream.resolution
+    size = stream.filesize_mb
+    m_type = stream.mime_type
+    text = ""
+    if "audio" in m_type:
+        text = f"صوت\n - {size}mb"
+    else:
+        text = f"فيديو\n - {res} - {size}mb"
+    return text

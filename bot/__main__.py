@@ -1,20 +1,27 @@
-from aiogram import Dispatcher
-from aiogram.utils import executor
+from aiogram import Dispatcher, Bot
 from bot.commands import set_default_commands
-from bot.loader import dp
+from bot.loader import bot, dp, is_production
 from loguru import logger
 from bot.keep_alive import keep_alive
+import asyncio
 
 
-async def startup(dp: Dispatcher) -> None:
+async def on_startup(bot: Bot) -> None:
     """initialization"""
-    await set_default_commands(dp)
+    await set_default_commands(bot)
     logger.info("bot started")
 
 
-async def shutdown(dp: Dispatcher) -> None:
-    """and need to close Redis and PostgreSQL connection when shutdown"""
+async def shutdown() -> None:
+    """fi there is need to close the connection when shutdown"""
     logger.info("bot finished")
+
+
+async def main() -> None:
+    # And the run events dispatching
+    dp.startup.register(on_startup)
+    dp.shutdown.register(shutdown)
+    await dp.start_polling(bot)
 
 
 if __name__ == "__main__":
@@ -25,5 +32,10 @@ if __name__ == "__main__":
         rotation="30 KB",
         compression="zip",
     )
-    keep_alive()
-    executor.start_polling(dp, skip_updates=True, on_startup=startup, on_shutdown=shutdown)
+
+    if is_production:
+        keep_alive()
+    try:
+        asyncio.run(main())
+    except KeyboardInterrupt:
+        logger.info("Program interrupted. Stopping gracefully...")

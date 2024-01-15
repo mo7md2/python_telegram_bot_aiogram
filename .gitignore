@@ -127,3 +127,5 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+logs/debug.2023-12-14_08-56-33_558152.log.zip
+logs/debug.2024-01-13_06-09-08_512432.log.zip
