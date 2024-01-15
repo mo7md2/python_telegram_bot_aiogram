@@ -9,7 +9,7 @@ license = "GPL-3.0-or-later"
 python = "^3.8"
 aiogram = "^3.3.0"
 loguru = "^0.6.0"
-python-dotenv = "^0.21.0"
+python-dotenv = "^1.0.0"
 pytube = "^15.0.0"
 flask = "^3.0.0"
 
