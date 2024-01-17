@@ -1,7 +1,11 @@
+import random
+import string
 from typing import BinaryIO, List
 from pytube import YouTube
 from pytube import Stream
 from bot.models import Job
+
+YOUTUBE_FILESIZE_LIMIT = 50
 
 
 def get_youtube_download_options(url: str) -> Job:
@@ -27,3 +31,13 @@ def get_youtube_stream_text(stream):
     else:
         text = f"🎥 فيديو {res}"
     return text
+
+
+def generate_id():
+    """
+    Generate a random ID consisting of 8 characters.
+
+    Returns:
+        str: The randomly generated ID.
+    """
+    return "".join(random.choices(string.ascii_letters + string.digits, k=8))

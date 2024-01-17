@@ -8,13 +8,13 @@ from aiogram.types.error_event import ErrorEvent
 
 from bot.loader import bot, dp
 from bot.texts import message_texts
-from bot.utils import get_youtube_download_options, get_youtube_stream_text
+from bot.utils import generate_id, get_youtube_download_options, get_youtube_stream_text, YOUTUBE_FILESIZE_LIMIT
 from bot.models import Job
 from pytube import Stream
 
 
 class YoutubeCallback(CallbackData, prefix="youtube_download"):
-    video_id: str
+    id: str
     stream_index: int
 
 
@@ -59,11 +59,10 @@ async def text_handler(message: types.Message) -> None:
             getting_info_msg = await message.reply(getting_info_text)
             data = get_youtube_download_options(url)
             photo_url = data.thumbnail_url
-            video_id = data.video_id
+            id = post_job(data=data)
             caption = data.title
             data.url_msg_id = message.message_id
-            kb_markup = get_download_options_keyboard(video_id, data.streams)
-            post_job(video_id, data)
+            kb_markup = get_download_options_keyboard(id, data.streams)
             await getting_info_msg.delete()
             await message.reply_photo(photo=photo_url, caption=caption, reply_markup=kb_markup)
         except Exception as e:
@@ -74,10 +73,10 @@ async def text_handler(message: types.Message) -> None:
         await message.reply(unknown_url_text)
 
 
-def get_download_options_keyboard(video_id: str, streams: List[Stream]):
+def get_download_options_keyboard(id: str, streams: List[Stream]):
     btn_list = []
     for index, stream in enumerate(streams):
-        callback_data = YoutubeCallback(video_id=video_id, stream_index=index).pack()
+        callback_data = YoutubeCallback(id=id, stream_index=index).pack()
         text = get_youtube_stream_text(stream)
         btn_list.append([types.InlineKeyboardButton(text=text, callback_data=callback_data)])
     return types.inline_keyboard_markup.InlineKeyboardMarkup(inline_keyboard=btn_list)
@@ -86,15 +85,18 @@ def get_download_options_keyboard(video_id: str, streams: List[Stream]):
 # vote_cb.filter(action='up')
 @dp.callback_query(YoutubeCallback.filter())
 async def download_youtube_cb_handler(query: types.CallbackQuery, callback_data: YoutubeCallback):
-    video_id = callback_data.video_id
+    id = callback_data.id
     index = callback_data.stream_index
-    job_data = get_job(video_id)
+    job_data = get_job(id)
     try:
         if job_data is None:
             raise Exception("job not found")
 
         url_msg_id = job_data.url_msg_id
-        stream = job_data.streams[index]
+        stream: Stream = job_data.streams[index]
+        if stream.filesize_mb >= YOUTUBE_FILESIZE_LIMIT:
+            await bot.send_message(chat_id=query.from_user.id, text=message_texts["file_size_limit"])
+            return False
         await bot.delete_message(chat_id=query.from_user.id, message_id=query.message.message_id)
         download_started_msg = await bot.send_message(
             chat_id=query.from_user.id, text=message_texts["download_started"]
@@ -112,7 +114,7 @@ async def download_youtube_cb_handler(query: types.CallbackQuery, callback_data:
         # Telegram server says - Bad Request: query is too old and response timeout expired or query ID is invalid
         # await bot.answer_callback_query(callback_query_id=query.id, text=message_texts["download_ended"])
     except Exception as e:
-        logger.info(f"downloaded failed: {video_id} - {e}")
+        logger.info(f"downloaded failed: id={id} - {e}")
         await bot.send_message(chat_id=query.from_user.id, text=message_texts["download_failed"])
         emoji = types.ReactionTypeEmoji(emoji="👾")
         await bot.set_message_reaction(chat_id=query.from_user.id, message_id=url_msg_id, reaction=[emoji])
@@ -121,32 +123,32 @@ async def download_youtube_cb_handler(query: types.CallbackQuery, callback_data:
     os.remove(path)
 
 
-def get_job(video_id: str) -> Optional[Job]:
+def get_job(id: str) -> Optional[Job]:
     """
-    Retrieve the job associated with the given video ID.
+    Retrieve the job associated with the given job ID.
 
     Args:
-        video_id (str): The ID of the video.
+        id (str): The ID of the job.
 
     Returns:
-        Optional[Job]: The job associated with the video ID, or None if no job is found.
+        Optional[Job]: The job associated with the job ID, or None if no job is found.
     """
-    return jobs.get(video_id)
+    return jobs.get(id)
 
 
-def post_job(video_id: str, data: Job) -> Job:
+def post_job(data: Job, id: Optional[str] = None) -> Job:
     """
-    Save the job data with the given video_id.
+    Save the job data with the given id.
 
     Args:
-        video_id (str): The ID of the video.
+        id (str): The ID of the job.
         data (Job): The data to be saved.
 
     Returns:
-        Job: The saved data.
+        id: The saved ID of the job.
     """
-    if video_id in jobs:
-        return data
+    if id == None or id in jobs:
+        return post_job(data, generate_id())
     else:
-        jobs[video_id] = data
-        return data
+        jobs[id] = data
+        return id
