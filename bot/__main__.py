@@ -2,7 +2,6 @@ from aiogram import Dispatcher, Bot
 from bot.commands import set_default_commands
 from bot.loader import bot, dp, is_production
 from loguru import logger
-from bot.keep_alive import keep_alive
 import asyncio
 
 
@@ -33,8 +32,6 @@ if __name__ == "__main__":
         compression="zip",
     )
 
-    if is_production:
-        keep_alive()
     try:
         asyncio.run(main())
     except KeyboardInterrupt:
