@@ -9,7 +9,7 @@ YOUTUBE_FILESIZE_LIMIT = 50
 
 
 def get_youtube_download_options(url: str) -> Job:
-    yt = YouTube(url,use_oauth=True,)
+    yt = YouTube(url,use_oauth=True,allow_oauth_cache= True)
 
     thumbnail_url = yt.thumbnail_url
     video_id = yt.video_id
